@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Спаси животных от нефти!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .game-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px auto;
+        }
+        
+        .animal {
+            width: 400px;
+            height: 400px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            display: none;
+        }
+        
+        .animal.active {
+            display: block;
+        }
+        
+        .oil-spot {
+            position: absolute;
+            background-color: #2c3e50;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            pointer-events: auto; /* Важно: разрешаем клики по пятнам */
+        }
+        
+        .oil-spot:hover {
+            opacity: 0.7;
+            transform: scale(1.1);
+        }
+        
+        .progress-bar {
+            width: 400px;
+            height: 20px;
+            background-color: #ddd;
+            border-radius: 10px;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        h1 {
+            color: #2c3e50;
+        }
+        
+        .message {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            min-height: 40px;
+            color: #2c3e50;
+        }
+        
+        .level-info {
+            font-size: 18px;
+            color: #666;
+            margin: 10px 0;
+        }
+        
+        .compliment {
+            font-size: 32px;
+            font-weight: bold;
+            color: #FF6B6B;
+            margin: 20px 0;
+            animation: bounce 0.5s ease infinite alternate;
+            display: none;
+        }
+        
+        @keyframes bounce {
+            from { transform: scale(1); }
+            to { transform: scale(1.2); }
+        }
+        
+        .restart-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+        
+        .restart-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* Стили для финального экрана */
+        .final-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            z-index: 1000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .final-screen.active {
+            display: flex;
+        }
+
+        .final-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .final-title {
+            font-size: 36px;
+            color: #4CAF50;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .final-message {
+            font-size: 24px;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .eco-icons {
+            font-size: 48px;
+            margin: 20px 0;
+        }
+
+        .animals-cleaned {
+            font-size: 20px;
+            color: #666;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+        }
+
+        /* Контейнер для пятен - занимает всю площадь животного */
+        .spots-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* pointer-events: none; УБИРАЕМ эту строку! */
+        }
+    </style>
+</head>
+<body>
+    <div id="mainGame">
+        <h1>Спаси животных от нефти!</h1>
+        <div class="level-info" id="levelInfo">Уровень 1 из 3</div>
+        <p>Кликай на нефтяные пятна, чтобы очистить животных</p>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        
+        <div class="game-container">
+            <!-- Первое животное - Белка -->
+            <div class="animal active" id="animal1" style="background-image: url('https://github.com/ArsikZhiga/animalscleaning/blob/main/belka.png?raw=true')">
+                <div class="spots-container" id="spots1"></div>
+            </div>
+            
+            <!-- Второе животное - Волк -->
+            <div class="animal" id="animal2" style="background-image: url('https://github.com/ArsikZhiga/animalscleaning/blob/main/wolf.png?raw=true')">
+                <div class="spots-container" id="spots2"></div>
+            </div>
+            
+            <!-- Третье животное - Лиса -->
+            <div class="animal" id="animal3" style="background-image: url('https://github.com/ArsikZhiga/animalscleaning/blob/main/fox.png?raw=true')">
+                <div class="spots-container" id="spots3"></div>
+            </div>
+        </div>
+        
+        <div class="compliment" id="compliment"></div>
+        <div class="message" id="message">Почисти белку от нефти!</div>
+        
+        <button class="restart-btn" id="restartBtn">Играть снова</button>
+    </div>
+
+    <!-- Финальный экран -->
+    <div class="final-screen" id="finalScreen">
+        <div class="final-content">
+            <div class="final-title">🎉 ПОЗДРАВЛЯЕМ! 🎉</div>
+            
+            <div class="eco-icons">🌳🐿️🐺🦊💚</div>
+            
+            <div class="final-message">
+                <strong>МОЛОДЕЦ!</strong> Ты помог животным и почистил лес!<br><br>
+                Теперь ты знаешь, кто такой <strong>нефтяник-эколог</strong> и чем он занимается!<br><br>
+                💚 <strong>Нефтяник-эколог</strong> - это специалист, который следит за тем,<br>
+                чтобы добыча нефти не вредила природе и животным!
+            </div>
+            
+            <div class="animals-cleaned">
+                ✅ Ты спас 3 животных: белку, волка и лису!
+            </div>
+            
+            <button class="restart-btn" id="finalRestartBtn">Играть снова</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const animals = [
+                { 
+                    id: 'animal1', 
+                    spotsId: 'spots1',
+                    name: 'Белка', 
+                    nameAccusative: 'белку',
+                    spots: 12 
+                },
+                { 
+                    id: 'animal2', 
+                    spotsId: 'spots2',
+                    name: 'Волк', 
+                    nameAccusative: 'волка',
+                    spots: 15 
+                },
+                { 
+                    id: 'animal3', 
+                    spotsId: 'spots3',
+                    name: 'Лиса', 
+                    nameAccusative: 'лису',
+                    spots: 18 
+                }
+            ];
+            
+            const compliments = [
+                "Отлично!",
+                "Молодец!",
+                "Супер!",
+                "Великолепно!",
+                "Потрясающе!",
+                "Прекрасно!",
+                "Браво!",
+                "Замечательно!"
+            ];
+            
+            const progress = document.getElementById('progress');
+            const message = document.getElementById('message');
+            const compliment = document.getElementById('compliment');
+            const finalScreen = document.getElementById('finalScreen');
+            const mainGame = document.getElementById('mainGame');
+            const restartBtn = document.getElementById('restartBtn');
+            const finalRestartBtn = document.getElementById('finalRestartBtn');
+            const levelInfo = document.getElementById('levelInfo');
+            
+            let currentLevel = 0;
+            let cleanedSpots = 0;
+            let totalSpots = 0;
+            
+            function startGame() {
+                currentLevel = 0;
+                cleanedSpots = 0;
+                message.textContent = `Почисти ${animals[0].nameAccusative} от нефти!`;
+                compliment.style.display = 'none';
+                finalScreen.classList.remove('active');
+                mainGame.style.display = 'block';
+                loadLevel(currentLevel);
+            }
+            
+            function loadLevel(level) {
+                // Скрываем всех животных
+                document.querySelectorAll('.animal').forEach(animal => {
+                    animal.classList.remove('active');
+                });
+                
+                // Очищаем все пятна
+                document.querySelectorAll('.spots-container').forEach(container => {
+                    container.innerHTML = '';
+                });
+                
+                // Показываем текущее животное
+                const currentAnimal = animals[level];
+                const animalElement = document.getElementById(currentAnimal.id);
+                animalElement.classList.add('active');
+                
+                // Обновляем информацию об уровне
+                levelInfo.textContent = `Уровень ${level + 1} из 3 - ${currentAnimal.name}`;
+                
+                // Обновляем сообщение с правильным склонением
+                message.textContent = `Почисти ${currentAnimal.nameAccusative} от нефти!`;
+                
+                // Сбрасываем прогресс
+                cleanedSpots = 0;
+                totalSpots = currentAnimal.spots;
+                updateProgress();
+                
+                // Создаем пятна
+                createOilSpots(currentAnimal.spotsId, currentAnimal.spots);
+            }
+            
+            function createOilSpots(spotsContainerId, spotsCount) {
+                const container = document.getElementById(spotsContainerId);
+                
+                // Получаем размеры контейнера
+                const containerWidth = container.offsetWidth;
+                const containerHeight = container.offsetHeight;
+                
+                for (let i = 0; i < spotsCount; i++) {
+                    const spot = document.createElement('div');
+                    spot.className = 'oil-spot';
+                    
+                    // Случайный размер пятна
+                    const size = Math.random() * 40 + 20;
+                    spot.style.width = size + 'px';
+                    spot.style.height = size + 'px';
+                    
+                    // Случайная позиция в пределах контейнера
+                    const maxX = containerWidth - size;
+                    const maxY = containerHeight - size;
+                    
+                    // Убеждаемся, что позиция внутри границ
+                    const posX = Math.max(0, Math.min(maxX, Math.random() * maxX));
+                    const posY = Math.max(0, Math.min(maxY, Math.random() * maxY));
+                    
+                    spot.style.left = posX + 'px';
+                    spot.style.top = posY + 'px';
+                    
+                    // Обработчик клика
+                    spot.addEventListener('click', function() {
+                        this.style.opacity = '0';
+                        this.style.transform = 'scale(0)';
+                        
+                        setTimeout(() => {
+                            if (this.parentNode) {
+                                this.remove();
+                                cleanedSpots++;
+                                updateProgress();
+                                
+                                if (cleanedSpots === totalSpots) {
+                                    showCompliment();
+                                    setTimeout(nextLevel, 1500);
+                                }
+                            }
+                        }, 300);
+                    });
+                    
+                    container.appendChild(spot);
+                }
+            }
+            
+            function showCompliment() {
+                const randomCompliment = compliments[Math.floor(Math.random() * compliments.length)];
+                compliment.textContent = randomCompliment;
+                compliment.style.display = 'block';
+                
+                setTimeout(() => {
+                    compliment.style.display = 'none';
+                }, 1400);
+            }
+            
+            function updateProgress() {
+                const percentage = (cleanedSpots / totalSpots) * 100;
+                progress.style.width = percentage + '%';
+            }
+            
+            function nextLevel() {
+                currentLevel++;
+                
+                if (currentLevel < animals.length) {
+                    loadLevel(currentLevel);
+                } else {
+                    gameComplete();
+                }
+            }
+            
+            function gameComplete() {
+                mainGame.style.display = 'none';
+                finalScreen.classList.add('active');
+            }
+            
+            // Обработчики кнопок перезапуска
+            restartBtn.addEventListener('click', startGame);
+            finalRestartBtn.addEventListener('click', startGame);
+            
+            // Запускаем игру
+            startGame();
+        });
+    </script>
+</body>
+</html>
