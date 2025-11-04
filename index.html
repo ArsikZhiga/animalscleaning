@@ -70,14 +70,6 @@
             color: #2c3e50;
         }
         
-        .message {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 20px 0;
-            min-height: 40px;
-            color: #2c3e50;
-        }
-        
         .compliment {
             font-size: 32px;
             font-weight: bold;
@@ -204,19 +196,19 @@
                     id: 'animal1', 
                     canvasId: 'oilCanvas1',
                     name: 'БЕЛКА',
-                    nameAccusative: 'белку'
+                    nameDative: 'белке'
                 },
                 { 
                     id: 'animal2', 
                     canvasId: 'oilCanvas2',
                     name: 'ВОЛК',
-                    nameAccusative: 'волка'
+                    nameDative: 'волку'
                 },
                 { 
                     id: 'animal3', 
                     canvasId: 'oilCanvas3',
                     name: 'ЛИСА',
-                    nameAccusative: 'лису'
+                    nameDative: 'лисе'
                 }
             ];
             
@@ -232,7 +224,6 @@
             ];
             
             const progress = document.getElementById('progress');
-            const message = document.getElementById('message');
             const compliment = document.getElementById('compliment');
             const finalScreen = document.getElementById('finalScreen');
             const mainGame = document.getElementById('mainGame');
@@ -243,7 +234,6 @@
 
             function startGame() {
                 currentLevel = 0;
-                message.textContent = 'Очисти животное от нефти!';
                 compliment.style.display = 'none';
                 finalScreen.classList.remove('active');
                 mainGame.style.display = 'block';
@@ -269,9 +259,6 @@
                 
                 // Инициализируем canvas с нефтью
                 initOilCanvas(currentAnimal.canvasId);
-                
-                // Обновляем сообщение
-                message.textContent = 'Очисти животное от нефти!';
             }
             
             function initOilCanvas(canvasId) {
@@ -443,7 +430,7 @@
             function showCompliment() {
                 const currentAnimal = animals[currentLevel];
                 const randomCompliment = compliments[Math.floor(Math.random() * compliments.length)];
-                compliment.textContent = `${randomCompliment} Ты почистил ${currentAnimal.nameAccusative}!`;
+                compliment.textContent = `${randomCompliment} Ты помог ${currentAnimal.nameDative}!`;
                 compliment.style.display = 'block';
             }
             
@@ -468,5 +455,3 @@
     </script>
 </body>
 </html>
-
-
