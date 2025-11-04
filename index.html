@@ -1,1 +1,472 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Очисти животных от нефти!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .game-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px auto;
+        }
+        
+        .animal-wrapper {
+            width: 400px;
+            height: 400px;
+            position: relative;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            overflow: hidden;
+            cursor: crosshair;
+        }
+        
+        .animal-image {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .oil-layer {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: crosshair;
+        }
+        
+        .progress-bar {
+            width: 400px;
+            height: 20px;
+            background-color: #ddd;
+            border-radius: 10px;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        h1 {
+            color: #2c3e50;
+        }
+        
+        .message {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            min-height: 40px;
+            color: #2c3e50;
+        }
+        
+        .compliment {
+            font-size: 32px;
+            font-weight: bold;
+            color: #FF6B6B;
+            margin: 20px 0;
+            animation: bounce 0.5s ease infinite alternate;
+            display: none;
+        }
+        
+        @keyframes bounce {
+            from { transform: scale(1); }
+            to { transform: scale(1.2); }
+        }
+        
+        .final-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            z-index: 1000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .final-screen.active {
+            display: flex;
+        }
+
+        .final-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .final-title {
+            font-size: 36px;
+            color: #4CAF50;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .final-message {
+            font-size: 24px;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .eco-icons {
+            font-size: 48px;
+            margin: 20px 0;
+        }
+
+        .instructions {
+            font-size: 16px;
+            color: #666;
+            margin: 10px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div id="mainGame">
+        <h1>Очисти животных от нефти!</h1>
+        <div class="message" id="message">Очисти животное от нефти!</div>
+        <div class="instructions">Зажмите левую кнопку мыши и водите курсором по черной нефти</div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        
+        <div class="game-container">
+            <!-- Первое животное - Белка -->
+            <div class="animal-wrapper" id="animal1" style="display: none;">
+                <div class="animal-image" style="background-image: url('https://github.com/ArsikZhiga/animalscleaning/blob/main/belka.png?raw=true')"></div>
+                <canvas class="oil-layer" id="oilCanvas1" width="400" height="400"></canvas>
+            </div>
+            
+            <!-- Второе животное - Волк -->
+            <div class="animal-wrapper" id="animal2" style="display: none;">
+                <div class="animal-image" style="background-image: url('https://github.com/ArsikZhiga/animalscleaning/blob/main/wolf.png?raw=true')"></div>
+                <canvas class="oil-layer" id="oilCanvas2" width="400" height="400"></canvas>
+            </div>
+            
+            <!-- Третье животное - Лиса -->
+            <div class="animal-wrapper" id="animal3" style="display: none;">
+                <div class="animal-image" style="background-image: url('https://github.com/ArsikZhiga/animalscleaning/blob/main/fox.png?raw=true')"></div>
+                <canvas class="oil-layer" id="oilCanvas3" width="400" height="400"></canvas>
+            </div>
+        </div>
+        
+        <div class="compliment" id="compliment"></div>
+    </div>
+
+    <!-- Финальный экран -->
+    <div class="final-screen" id="finalScreen">
+        <div class="final-content">
+            <div class="final-title">🎉 ПОЗДРАВЛЯЕМ! 🎉</div>
+            
+            <div class="eco-icons">🌳🐿️🐺🦊💚</div>
+            
+            <div class="final-message">
+                <strong>МОЛОДЕЦ!</strong> Ты помог животным и почистил лес!<br><br>
+                Теперь ты знаешь, кто такой <strong>нефтяник-эколог</strong> и чем он занимается!<br><br>
+                💚 <strong>Нефтяник-эколог</strong> - это специалист, который следит за тем,<br>
+                чтобы добыча нефти не вредила природе и животным!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const animals = [
+                { 
+                    id: 'animal1', 
+                    canvasId: 'oilCanvas1',
+                    name: 'БЕЛКА',
+                    nameAccusative: 'белку'
+                },
+                { 
+                    id: 'animal2', 
+                    canvasId: 'oilCanvas2',
+                    name: 'ВОЛК',
+                    nameAccusative: 'волка'
+                },
+                { 
+                    id: 'animal3', 
+                    canvasId: 'oilCanvas3',
+                    name: 'ЛИСА',
+                    nameAccusative: 'лису'
+                }
+            ];
+            
+            const compliments = [
+                "Отлично!",
+                "Молодец!",
+                "Супер!",
+                "Великолепно!",
+                "Потрясающе!",
+                "Прекрасно!",
+                "Браво!",
+                "Замечательно!"
+            ];
+            
+            const progress = document.getElementById('progress');
+            const message = document.getElementById('message');
+            const compliment = document.getElementById('compliment');
+            const finalScreen = document.getElementById('finalScreen');
+            const mainGame = document.getElementById('mainGame');
+            
+            let currentLevel = 0;
+            let isErasing = false;
+            const BRUSH_SIZE = 30;
+
+            function startGame() {
+                currentLevel = 0;
+                message.textContent = 'Очисти животное от нефти!';
+                compliment.style.display = 'none';
+                finalScreen.classList.remove('active');
+                mainGame.style.display = 'block';
+                loadLevel(currentLevel);
+            }
+            
+            function loadLevel(level) {
+                // Скрываем всех животных
+                document.querySelectorAll('.animal-wrapper').forEach(wrapper => {
+                    wrapper.style.display = 'none';
+                });
+                
+                // Скрываем комплимент
+                compliment.style.display = 'none';
+                
+                // Показываем текущее животное
+                const currentAnimal = animals[level];
+                const animalWrapper = document.getElementById(currentAnimal.id);
+                animalWrapper.style.display = 'block';
+                
+                // Сбрасываем прогресс
+                progress.style.width = '0%';
+                
+                // Инициализируем canvas с нефтью
+                initOilCanvas(currentAnimal.canvasId);
+                
+                // Обновляем сообщение
+                message.textContent = 'Очисти животное от нефти!';
+            }
+            
+            function initOilCanvas(canvasId) {
+                const canvas = document.getElementById(canvasId);
+                const ctx = canvas.getContext('2d');
+                
+                // Очищаем canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Заполняем черным цветом (нефть)
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Настраиваем композитную операцию для стирания
+                ctx.globalCompositeOperation = 'destination-out';
+                
+                // Добавляем обработчики событий
+                addCanvasEventListeners(canvas);
+            }
+            
+            function addCanvasEventListeners(canvas) {
+                let isDrawing = false;
+                let lastX = 0;
+                let lastY = 0;
+                
+                function draw(x, y) {
+                    const ctx = canvas.getContext('2d');
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, BRUSH_SIZE, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Обновляем прогресс
+                    updateProgress(canvas);
+                }
+                
+                function getCanvasCoordinates(e) {
+                    const rect = canvas.getBoundingClientRect();
+                    const scaleX = canvas.width / rect.width;
+                    const scaleY = canvas.height / rect.height;
+                    
+                    let clientX, clientY;
+                    
+                    if (e.touches) {
+                        // Для touch событий
+                        clientX = e.touches[0].clientX;
+                        clientY = e.touches[0].clientY;
+                    } else {
+                        // Для mouse событий
+                        clientX = e.clientX;
+                        clientY = e.clientY;
+                    }
+                    
+                    return {
+                        x: (clientX - rect.left) * scaleX,
+                        y: (clientY - rect.top) * scaleY
+                    };
+                }
+                
+                // Mouse events
+                canvas.addEventListener('mousedown', (e) => {
+                    isDrawing = true;
+                    const coords = getCanvasCoordinates(e);
+                    lastX = coords.x;
+                    lastY = coords.y;
+                    draw(lastX, lastY);
+                });
+                
+                canvas.addEventListener('mousemove', (e) => {
+                    if (!isDrawing) return;
+                    
+                    const coords = getCanvasCoordinates(e);
+                    const currentX = coords.x;
+                    const currentY = coords.y;
+                    
+                    // Рисуем линию между точками для плавного стирания
+                    const ctx = canvas.getContext('2d');
+                    ctx.beginPath();
+                    ctx.lineWidth = BRUSH_SIZE * 2;
+                    ctx.lineCap = 'round';
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(currentX, currentY);
+                    ctx.stroke();
+                    
+                    lastX = currentX;
+                    lastY = currentY;
+                    
+                    updateProgress(canvas);
+                });
+                
+                canvas.addEventListener('mouseup', () => {
+                    isDrawing = false;
+                    checkLevelCompletion(canvas);
+                });
+                
+                canvas.addEventListener('mouseleave', () => {
+                    isDrawing = false;
+                });
+                
+                // Touch events
+                canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    isDrawing = true;
+                    const coords = getCanvasCoordinates(e);
+                    lastX = coords.x;
+                    lastY = coords.y;
+                    draw(lastX, lastY);
+                });
+                
+                canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    if (!isDrawing) return;
+                    
+                    const coords = getCanvasCoordinates(e);
+                    const currentX = coords.x;
+                    const currentY = coords.y;
+                    
+                    // Рисуем линию между точками для плавного стирания
+                    const ctx = canvas.getContext('2d');
+                    ctx.beginPath();
+                    ctx.lineWidth = BRUSH_SIZE * 2;
+                    ctx.lineCap = 'round';
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(currentX, currentY);
+                    ctx.stroke();
+                    
+                    lastX = currentX;
+                    lastY = currentY;
+                    
+                    updateProgress(canvas);
+                });
+                
+                canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    isDrawing = false;
+                    checkLevelCompletion(canvas);
+                });
+            }
+            
+            function updateProgress(canvas) {
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                let transparentPixels = 0;
+                let totalPixels = data.length / 4;
+                
+                for (let i = 3; i < data.length; i += 4) {
+                    if (data[i] === 0) {
+                        transparentPixels++;
+                    }
+                }
+                
+                const percentage = (transparentPixels / totalPixels) * 100;
+                progress.style.width = percentage + '%';
+                
+                return percentage;
+            }
+            
+            function checkLevelCompletion(canvas) {
+                const percentage = updateProgress(canvas);
+                
+                if (percentage >= 70) {
+                    showCompliment();
+                    setTimeout(nextLevel, 2000);
+                }
+            }
+            
+            function showCompliment() {
+                const currentAnimal = animals[currentLevel];
+                const randomCompliment = compliments[Math.floor(Math.random() * compliments.length)];
+                compliment.textContent = `${randomCompliment} Ты почистил ${currentAnimal.nameAccusative}!`;
+                compliment.style.display = 'block';
+            }
+            
+            function nextLevel() {
+                currentLevel++;
+                
+                if (currentLevel < animals.length) {
+                    loadLevel(currentLevel);
+                } else {
+                    gameComplete();
+                }
+            }
+            
+            function gameComplete() {
+                mainGame.style.display = 'none';
+                finalScreen.classList.add('active');
+            }
+            
+            // Запускаем игру
+            startGame();
+        });
+    </script>
+</body>
+</html>
 
